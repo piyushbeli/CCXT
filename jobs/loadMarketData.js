@@ -11,12 +11,11 @@ class LoadMarketData {
 
         this._logger = options['logger'];
 
-        this._cctxService = null;
+        this._cctxService = new CCTXService(this._config, this._options);;
     }
 }
 
-LoadMarketData.prototype.init = async function () {
-    this._cctxService = new CCTXService(this._config, this._options);
+LoadMarketData.prototype.init = async function () {   
     await this._cctxService.init();
 };
 
