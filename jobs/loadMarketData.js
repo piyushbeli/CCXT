@@ -61,7 +61,7 @@ LoadMarketData.prototype.run = async function () {
             await this._mysql.upsert(marketData);
         }
         this._logger.info({
-            msg: 'LoadMarketData:run:: Finished inserting thw data into mysql db',
+            msg: 'LoadMarketData:run:: Finished inserting the data into mysql db',
             totalUpserted: allMarketData.length
         });
     } catch (e) {

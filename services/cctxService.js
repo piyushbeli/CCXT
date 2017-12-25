@@ -40,7 +40,9 @@ CCXTService.prototype.getMarketData = async function (exchangeId) {
     } catch(e) {
         this._logger.error({
             msg: 'CCXTService:getMarketData:: Error occurred while fetching market data for exchange',
-            echangeId: exchangeId
+            echangeId: exchangeId,
+            error: e.toString(),
+            stack: e.stack
         });
         // Lets not throw the exception because we want to keep the process running for other exchange
     }
