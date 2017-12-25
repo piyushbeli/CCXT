@@ -14,6 +14,27 @@ const UTILS = {
 
         // Next just get the ipAddr of the host connecting to us
         return req.socket.remoteAddress;
+    },
+
+    getCommaSeparatedArrayList: function (array) {
+
+    },
+
+    writeError: function (res, error, errorCode) {
+        var wrapper = JSON.stringify({
+            status: 'NOTOK',
+            'errorcode':errorCode,
+            'errormessage' : error.toString()
+        });
+        res.status(404).send(wrapper);
+    },
+
+    writeSuccess: function (res, result) {
+        var wrapper = JSON.stringify({
+            status: 'OK',
+            info: result
+        });
+        res.status(200).send(wrapper);
     }
 };
 

@@ -1,7 +1,11 @@
 'use strict';
 
 // System includes
-const EXPRESS     = require('express');
+const EXPRESS = require('express');
+
+// Local includes
+const UTILS = require(__dirname + '/../utils/utils');
+const COIN_SERVICE = require(__dirname + '/../services/coinService');
 
 class CoinRoute {
     constructor(config, options) {
@@ -10,6 +14,7 @@ class CoinRoute {
         this._logger = options['logger'];
 
         this._router = EXPRESS.Router();
+        this._coinService = new COIN_SERVICE(config, options);
 
 
         // Define various coin routes
@@ -18,24 +23,44 @@ class CoinRoute {
     }
 }
 
-CoinRoute.prototype.init = function () {
+CoinRoute.prototype.init = async function () {
+    await this._coinService.init();
     this._logger.info({
         msg: 'CoinRoute:init:: Start initialization'
     });
 };
 
-CoinRoute.prototype.getRouter                    = function() {
+CoinRoute.prototype.getRouter = function() {
     return this._router;
 };
 
 // Fetch the coin pair price
-CoinRoute.prototype.fetchCoinPrice = function (req, res) {
+// Example: http://localhost:9001/coin/coin-price?pair=XRP/USDT
+CoinRoute.prototype.fetchCoinPrice = async function (req, res) {
+    const coinPair = req.query['pair'];
 
+    if (!coinPair) {
+        UTILS.writeError(res, 'pair name is not passed', 404);
+    } else {
+        const data = await this._coinService.getCoinRates(coinPair);
+        UTILS.writeSuccess(res, data);
+    }
 };
 
 // Fetch the exchange info
-CoinRoute.prototype.fetchExchangeInfo = function (req, res) {
+// Example http://localhost:9001/coin/coin-price?pair=XRP/USDT
+CoinRoute.prototype.fetchExchangeInfo = async function (req, res) {
+    const exchangeId = req.query['name'];
+    const isValidExchange = this._config['SUPPORTED_EXCHANGE'].indexOf(exchangeId) > 0;
 
+    if (!exchangeId) {
+        UTILS.writeError(res, 'exchange name is not passed', 504);
+    } else if (!isValidExchange) {
+        UTILS.writeError(res, `exchange ${exchangeId} is not supported`, 404);
+    } else {
+        const data = await this._coinService.getExchangeData(exchangeId);
+        UTILS.writeSuccess(res, data);
+    }
 };
 
 module.exports = CoinRoute;

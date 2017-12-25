@@ -58,7 +58,13 @@ MySQLDB.prototype.createDBIfNotExist = function () {
 MySQLDB.prototype.createCoinRateTable = function () {
     return new Promise((resolve, reject) => {
         this._conn.query({
-            sql: `CREATE TABLE IF NOT EXISTS ${this._dbName  + '.' + this._tableName}(id INT(11) NOT NULL auto_increment, coin VARCHAR(256) NOT NULL, exchange varchar(256) NOT NULL, updatedTime DATE, PRIMARY KEY (id), INDEX (coin)) ENGINE=MEMORY`,
+            sql: `CREATE TABLE IF NOT EXISTS ${this._dbName  + '.' + this._tableName}
+            (id INT(11) NOT NULL auto_increment,
+            coin VARCHAR(256) NOT NULL,
+            exchange varchar(256) NOT NULL,
+            updatedTime DATETIME,
+            value float,
+            PRIMARY KEY (id), CONSTRAINT EC_Coin UNIQUE (coin,exchange), INDEX (coin)) ENGINE=MEMORY`,
             timeout: 40000 // 40 seconds
         }, function (error, results, fields) {
             if (error) {
@@ -86,7 +92,51 @@ MySQLDB.prototype.insertCoinData = function (data) {
     });
 };
 
-MySQLDB.prototype.fetchCoinRates = function (symbol) {
+// values is nothing but comma separated values of multiple items
+// Examples (BTC/USD, ''bitrex', 102555522, 225), (BTC/AED, ''bitrex', 102555522, 225)
+MySQLDB.prototype.bulkUpdate = function (values) {
+    return new Promise((resolve, reject) => {
+        this._conn.query(
+            `INSERT INTO ${this._dbName  + '.' + this._tableName} (coin, exchange, updatedTime, value) VALUES ?
+            ON DUPLICATE KEY UPDATE updateTime = VALUES(updateTime), value = VALUES(value) `,
+            values,
+            function (error, results, fields) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            }
+        )
+    });
+};
+
+MySQLDB.prototype.upsert = function (value) {
+    //${value['coin']}, ${value['exchange']}, ${value['updatedTime']}, ${value['value']}
+    const self = this;
+    return new Promise((resolve, reject) => {
+        this._conn.query(
+            `INSERT INTO ${this._dbName  + '.' + this._tableName}
+            (coin, exchange, updatedTime, value)
+            VALUES(?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE updatedTime=VALUES(updatedTime), value=VALUES(value)`,
+            [value['coin'], value['exchange'], value['updatedTime'], value['value']],
+            function (error, results, fields) {
+                if (error) {
+                    self._logger.error({
+                        msg: 'MySQLDB:upsert:: Error query',
+                        query: this.sql
+                    });
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            }
+        )
+    });
+};
+
+MySQLDB.prototype.fetchCoinRate = function (symbol) {
     return new Promise((resolve, reject) => {
         this._conn.query(
             `SELECT * FROM ${this._dbName  + '.' + this._tableName} WHERE coin = ?`,

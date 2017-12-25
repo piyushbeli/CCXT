@@ -6,7 +6,8 @@ const CONF = {
         password: 'root', //If you do not set any password for user mysql server then keep this empty string.
         connectTimeout: 60*1000 //60 seconds. Default is 10 seconds.
     },
-    CRON_FREQUENCY: 5*60*1000 //In milliseconds
+    CRON_FREQUENCY: 2*60*1000, //In milliseconds
+    SUPPORTED_EXCHANGE: ['bittrex', 'poloniex']
 };
 
 //

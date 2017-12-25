@@ -28,13 +28,22 @@ CCXTService.prototype.getExchangeInstance = function (exchangeId) {
 
 CCXTService.prototype.getMarketData = async function (exchangeId) {
     // Lets convert the exchangeId into lowercase in case it is not passed in lowercase.
+    let marketData = [];
     exchangeId = (exchangeId || '').toLowerCase();
     const exchangeInstance = this.getExchangeInstance(exchangeId);
-    const marketData = await exchangeInstance.fetchTickers();
-    this._logger.info({
-        msg: 'CCXTService:getMarketData:: Fetched the market data',
-        exchangeId: exchangeId
-    });
+    try {
+        marketData = await exchangeInstance.fetchTickers();
+        this._logger.info({
+            msg: 'CCXTService:getMarketData:: Fetched the market data',
+            exchangeId: exchangeId
+        });
+    } catch(e) {
+        this._logger.error({
+            msg: 'CCXTService:getMarketData:: Error occurred while fetching market data for exchange',
+            echangeId: exchangeId
+        });
+        // Lets not throw the exception because we want to keep the process running for other exchange
+    }
 
     return marketData;
 };

@@ -7,7 +7,7 @@ class MarketData {
         }
         this.coin = data.symbol;
         this.exchange = exchange;
-        this.updatedTime = Date.now();
+        this.updatedTime = new Date();
         this.value = data.last;
     }
 }
