@@ -51,7 +51,7 @@ CoinRoute.prototype.fetchCoinPrice = async function (req, res) {
 // Example http://localhost:9001/coin/coin-price?pair=XRP/USDT
 CoinRoute.prototype.fetchExchangeInfo = async function (req, res) {
     const exchangeId = req.query['name'];
-    const isValidExchange = this._config['SUPPORTED_EXCHANGE'].indexOf(exchangeId) > 0;
+    const isValidExchange = this._config['SUPPORTED_EXCHANGE'].indexOf(exchangeId) > -1;
 
     if (!exchangeId) {
         UTILS.writeError(res, 'exchange name is not passed', 504);
